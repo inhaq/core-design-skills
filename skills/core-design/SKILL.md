@@ -195,6 +195,8 @@ Always implement: default, hover, focus-visible, active, disabled, loading, empt
 
 Never use `outline: none` without replacing the focus ring. Empty states aren't "No data." — they explain what would be here and how to get something here.
 
+**Don't signal active/selected state with a colored left bar alone.** It's a cliche, and adjacent items each carrying their own left accent creates competing hierarchies. Use background tint, icon state changes, or a typography weight shift. Reserve top/bottom borders for section grouping, not per-item status.
+
 ## Motion
 
 Animation has a budget. Spend it where it pays off. For springs, gestures, `clip-path` techniques, performance under load, and framework-specific notes (Framer Motion, etc.), read `references/advanced-motion.md`.

@@ -55,6 +55,7 @@ Each item below marks UI as AI-generated. Each one breaks at least one principle
 - Gray borders on every component
 - Multiple CTAs of equal weight
 - Fake chat or command-bar UI added because "AI products have those"
+- Left-edge colored bars or glow as the only signal for active, selected, or "suggested" state on nav items, sidebar rows, tabs, cards, pills, or tips. Creates ambiguous hierarchy when adjacent items each carry a competing accent. Use background tint, icon state, or typography weight shift instead; reserve top or bottom borders for section grouping, not per-item status.
 
 ## Decoration
 
