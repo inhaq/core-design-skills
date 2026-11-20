@@ -26,6 +26,9 @@ When scanning a folder, test, story, and fixture files are skipped (`*.test.*`, 
 ## Read the hits
 
 - `[always]` hits are bugs. Fix them.
+- Some `[default]` hits are `[always]` in context, and the script can't see context. Check these by eye:
+  - A left-edge bar marking the active or selected item (nav, sidebar row, tab) is `[always]`. On a callout or quote it is `[default]`.
+  - `h-screen` / `100vh` on a hero or any visible full-height section is `[always]`. On a hidden filler layer it is fine.
 - `[default]` hits need a reason. Keep one only if the aesthetic direction calls for it.
 - A clean run does not mean the design is good. Hierarchy, rhythm, and copy need eyes. Work through `references/anti-patterns.md` after the script.
 
@@ -51,14 +54,14 @@ Put `check-tells: ignore` in a comment on the same line or the line above, with 
 | Gradient text | default | `bg-clip-text`, `background-clip: text` |
 | Colored glow shadow | default | `shadow-indigo-500/50` and similar |
 | Light gray text | default | `text-gray-300/400`; fine on dark surfaces |
-| Left-edge bar | default | `border-l-4`, `border-s-4`, `border-left` / `border-inline-start: 4px solid` |
+| Left-edge bar | default (`[always]` on active/selected items) | `border-l-4`, `border-s-4`, `border-left` / `border-inline-start: 4px solid` |
 | Left-edge bar, disguised | default | inset shadow `inset 3px 0 0`, `before:left-0 … before:w-1` |
 | Top accent bar | default | `border-t-4`, `border-top: 4px solid` |
 | Glassmorphism | default | `backdrop-blur`, `backdrop-filter: blur` |
 | Wide uppercase tracking | default | `uppercase` + `tracking-widest`, either order |
 | Italic or gradient word in headline | default | `<h1>` with an `<em>`, `<i>`, or an italic or gradient `<span>` inside |
-| `h-screen` | always | `h-screen` (not `min-h-screen`) |
-| 100vh height | default | `height: 100vh`; fine on hidden filler layers |
+| `h-screen` | default | `h-screen` (not `min-h-screen`); `[always]` on a visible full-height section |
+| 100vh height | default | `height: 100vh`; `[always]` on a visible full-height section, fine on hidden filler layers |
 | 100vh min-height | default | `min-h-screen`, `min-height: 100vh` |
 | Physical left/right spacing | default, `--rtl` only | `ml-*`, `pr-*` instead of `ms-*`, `pe-*` |
 | `transition: all` | always | `transition-all`, `transition: all` |
@@ -70,6 +73,7 @@ Put `check-tells: ignore` in a comment on the same line or the line above, with 
 | `scale(0)` entrance | always | `scale(0)`, `scale-0` |
 | Layout property transition | always | `transition: width …`, `max-height`, `top`, `left`, `margin`, `padding`; not `border-left-color` |
 | Focus ring removed | always | `focus:outline-none`, `focus-visible:outline-none`, `outline-hidden`, `outline: none`, with no `focus:ring-*` or `focus:outline-*` within 3 lines (`ring-0` doesn't count). Exempt: `:focus:not(:focus-visible)` blocks, `main:focus` and `tabindex="-1"` targets, `focus-within:` wrappers |
+| Focus ring only via box-shadow | default | `outline: none` with a `box-shadow` in the same rule; shadows vanish in forced-colors mode |
 | Bare outline-none | default | `outline-none` with no `focus:` prefix and no ring nearby; popups and menu items often show focus with a highlight instead |
 | Clickable div | always | `<div … onClick=`, Vue `@click`, Svelte `on:click`, across lines; divs with `role` or `aria-hidden` exempt |
 | z-index 9999 | always | `z-index: 9999`, `z-[9999]` |

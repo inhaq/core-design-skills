@@ -106,6 +106,15 @@ class Tags(unittest.TestCase):
     def test_missing_reduced_motion_is_always(self):
         self.assertEqual(self.tags(FIXTURES / "no-reduced-motion.css")["motion with no reduced-motion fallback"], "always")
 
+    def test_h_screen_matches_100vh(self):
+        # Same CSS as height: 100vh, so the same tag.
+        self.assertEqual(self.tags(FIXTURES / "bad.tsx")["h-screen"], "default")
+
+    def test_box_shadow_ring_is_default(self):
+        tags = self.tags(FIXTURES / "bad.css")
+        self.assertEqual(tags["focus ring drawn only with box-shadow"], "default")
+        self.assertEqual(tags["focus outline removed"], "always")  # line 2 still has no ring at all
+
     def test_bounce_is_default(self):
         # A loader or typing dot can bounce; the checker can't tell it from a CTA.
         self.assertEqual(self.tags(FIXTURES / "good.tsx")["bounce/ping"], "default")

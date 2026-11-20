@@ -64,7 +64,7 @@ TELLS: list[tuple[str, str, str, str, str | None]] = [
      "sentence case, modest tracking", None),
     ("default", "italic or gradient word in headline", r"<h1\b[^>]*>[^<]*<(em|i)\b|<h1\b[^>]*>[^<]*<span[^>]*(italic|bg-clip-text)", "let the whole line carry the weight", None),
     # Layout
-    ("always", "h-screen", r"(?<![\w-])h-screen\b", "h-svh / h-dvh or content height", None),
+    ("default", "h-screen", r"(?<![\w-])h-screen\b", "h-svh / h-dvh on full-height sections, or content height", None),
     ("default", "100vh height", r"(?<![\w-])height:\s*100vh", "100svh / 100dvh on full-height sections", None),
     ("default", "100vh min-height", r"(?<![\w-])min-h-screen\b|min-height:\s*100vh", "min-h-dvh / 100dvh", None),
     ("rtl", "physical left/right spacing", r"\b[mp][lr]-(\d+|\[)", "logical ms-* / ps-* for RTL", None),
@@ -114,6 +114,7 @@ FOCUS_WITHIN = re.compile(r"focus-within:|:focus-within")
 # or no ring is needed: keyboard focus keeps its ring, or only script moves focus there (skip-link <main>).
 NO_RING_NEEDED = re.compile(r":not\(:focus-visible\)|\bmain\b[^,{]*:focus|tabindex=.?-1", re.IGNORECASE)
 CSS_OUTLINE = re.compile(r"^\s*outline\s*:")
+BOX_SHADOW = re.compile(r"box-shadow\s*:")
 
 COMPILED = [
     (tag, name, re.compile(rx, re.IGNORECASE), fix, re.compile(skip, re.IGNORECASE) if skip else None)
@@ -203,6 +204,9 @@ def scan(path: str, rtl: bool = False) -> list[tuple[int, str, str, str]]:
                 continue
             if name in FOCUS_TELLS and focus_shown(lines, lineno, selector):
                 continue
+            # A box-shadow ring in the same rule still shows focus, just not in forced-colors mode.
+            if name == "focus outline removed" and any(BOX_SHADOW.search(l) for l in lines[max(0, lineno - 4):lineno + 3]):
+                tag, name, fix = "default", "focus ring drawn only with box-shadow", "add outline: 2px solid transparent, or use outline on :focus-visible"
             hits.append((lineno, "default" if tag == "rtl" else tag, name, fix))
     for tag, name, rx, fix in COMPILED_MULTI:
         for m in rx.finditer(text):
