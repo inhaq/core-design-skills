@@ -13,9 +13,25 @@ The skill lives at `skills/core-design/`. It is the canonical source. Everything
 ```
 skills/core-design/
 ├── SKILL.md                       # entry point: frontmatter + main instructions
-└── references/
-    ├── anti-patterns.md           # loaded when reviewing UI for genericness
-    └── advanced-motion.md         # loaded when working on springs, gestures, perf, framework motion
+├── references/
+│   ├── anti-patterns.md           # loaded when reviewing UI for genericness
+│   ├── grep-tells.md              # how to run and extend the tell checker
+│   ├── examples.md                # before/after code for common tells
+│   └── advanced-motion.md         # loaded when working on springs, gestures, perf, framework motion
+└── scripts/
+    └── check-tells.py             # regex scan for AI-default tells; exit 1 on [always] hits
+```
+
+Repo-only folders, not part of the installed skill:
+
+- `evals/` — test prompts for the skill.
+- `tests/` — `validate_skill.py` (spec and line-limit checks) and unit tests for the checker, with fixtures.
+- `.github/workflows/ci.yml` — runs both on every pull request.
+
+Before pushing, run:
+
+```bash
+python3 tests/validate_skill.py && python3 -m unittest discover -s tests
 ```
 
 This is hub-and-spoke. `SKILL.md` is the always-loaded body. `references/` files load only when the agent decides to read them. Keep it that way.
@@ -36,7 +52,7 @@ If the output renders in a browser, the skill applies.
 1. Read `skills/core-design/SKILL.md` first.
 2. Pick a clear aesthetic direction before styling.
 3. Apply the Non-negotiables. Then work in priority order: hierarchy → spacing → typography → color → components → motion → polish.
-4. Read `references/anti-patterns.md` before finishing or when reviewing.
+4. Run `scripts/check-tells.py` on the output, then read `references/anti-patterns.md` before finishing or when reviewing.
 5. Read `references/advanced-motion.md` only when the core motion rules in `SKILL.md` are not enough (springs, gestures, performance under load, Framer Motion specifics).
 6. Run the Review Checklist near the bottom of `SKILL.md`.
 
@@ -64,7 +80,7 @@ The skill is most useful when it stays short, opinionated, and practical. Apply 
 
 - `name` in frontmatter must be lowercase letters, numbers, and hyphens only, must match the directory name, and must not contain reserved words like `claude` or `anthropic`.
 - `description` must describe both **what** the skill does and **when** to use it. Write in third person. Include concrete triggers (frameworks, surface types, the words a user would actually say).
-- Keep `SKILL.md` body under 500 lines. Anthropic's recommendation; ours sits around 370.
+- Keep `SKILL.md` body under 500 lines. Anthropic's recommendation; ours sits around 450. `tests/validate_skill.py` enforces the limit.
 - Reference files stay one level deep. No nested reference chains. Agents may only partially read deeply nested files.
 
 ### Authoring discipline
@@ -76,7 +92,9 @@ The skill is most useful when it stays short, opinionated, and practical. Apply 
 - **Frame defaults as defaults.** Where a brand or context could justifiably deviate (font choice, durations, easing), say so. Avoid absolute wording.
 - **Move heavy material to references.** If a section is more than ~30 lines and only relevant in specific situations, it belongs in `references/`. Add a one-line pointer in `SKILL.md` describing when to read it.
 - **Update the Review Checklist** when adding new rules.
-- **Update `references/anti-patterns.md`** when forbidding something so the rule is enforced both ways.
+- **Update `references/anti-patterns.md`** when forbidding something so the rule is enforced both ways. Write each item as **Pattern.** why → fix, tagged `[always]` or `[default]`.
+- **Add a regex to `scripts/check-tells.py`** when the new tell can be found in source, a row to `references/grep-tells.md`, and a fixture line plus test in `tests/`.
+- **Add an eval case** to `evals/cases.json` when a tell slipped through in real use.
 
 ### Structure
 
@@ -106,5 +124,6 @@ The skill is most useful when it stays short, opinionated, and practical. Apply 
 - [ ] Spacing, color, radius, and type follow a system
 - [ ] All interactive states implemented
 - [ ] Accessibility verified (contrast, focus, keyboard, reduced motion)
+- [ ] `scripts/check-tells.py` shows no `[always]` hits
 - [ ] Cross-checked against `references/anti-patterns.md`
 - [ ] Review Checklist in the skill has been run

@@ -1,0 +1,7 @@
+/* Each rule carries the tell named in its comment. Line numbers are asserted in tests. */
+*:focus { outline: none; } /* focus outline removed: a `*` selector, not a comment line */
+* { transition: all 0.2s ease; } /* transition: all */
+.input:focus {
+  outline: none; /* focus ring drawn only with box-shadow */
+  box-shadow: 0 0 0 3px var(--focus);
+}

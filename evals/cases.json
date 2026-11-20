@@ -1,0 +1,91 @@
+[
+  {
+    "id": "landing-saas",
+    "prompt": "Build a landing page for a tool that runs database migrations safely. HTML and Tailwind.",
+    "must": [
+      "One primary CTA in the hero",
+      "Headline names a specific outcome",
+      "Body text left-aligned"
+    ],
+    "must_not": [
+      "Purple or indigo gradient",
+      "Pill badge above the hero",
+      "One italic or gradient word in the headline",
+      "Three or six identical feature cards",
+      "Icons in colored circles",
+      "Invented stats row or placeholder logos",
+      "Fade-up reveal on every section",
+      "100vh hero"
+    ]
+  },
+  {
+    "id": "dashboard-sidebar",
+    "prompt": "Build a React admin dashboard with a sidebar, four KPIs, and a recent orders table.",
+    "must": [
+      "One KPI or task clearly leads",
+      "Active sidebar item marked with tint or weight and aria-current",
+      "Table uses a single row separator"
+    ],
+    "must_not": [
+      "Left-edge colored bar on the active nav item",
+      "Icon in a tinted square on every sidebar row",
+      "Green delta badge on every KPI card",
+      "Gradient-filled area chart",
+      "Zebra rows plus borders plus hover on the table",
+      "Search box that does nothing"
+    ]
+  },
+  {
+    "id": "docs-callouts",
+    "prompt": "Write a docs page section with a note, a warning, and a quote, in HTML and CSS.",
+    "must": [
+      "Callouts distinguished by tint, icon, and a bold lead word",
+      "Quote styled through type"
+    ],
+    "must_not": [
+      "border-left stripe on callouts or blockquote",
+      "Emoji as callout icons"
+    ]
+  },
+  {
+    "id": "signup-form",
+    "prompt": "Build a signup form with name, email, password, and plan choice. Vue.",
+    "must": [
+      "Labels above fields",
+      "Inline error text linked with aria-describedby",
+      "Required or optional marked"
+    ],
+    "must_not": [
+      "Placeholder as label",
+      "Error shown by red border alone",
+      "Disabled submit with no reason",
+      "focus outline removed without a ring"
+    ]
+  },
+  {
+    "id": "pricing",
+    "prompt": "Build a pricing section with three plans. Svelte.",
+    "must": [
+      "One plan visibly recommended",
+      "Prices use tabular numbers"
+    ],
+    "must_not": [
+      "Gradient buttons",
+      "Glow shadow on the featured plan",
+      "Green circle check on every line",
+      "Three CTAs of equal weight"
+    ]
+  },
+  {
+    "id": "review-existing",
+    "prompt": "Review this component for polish: <div class=\"border-l-4 border-indigo-500 bg-white/60 backdrop-blur rounded-2xl p-6 shadow-xl transition-all hover:-translate-y-1\"><div class=\"rounded-2xl border p-4\">…</div></div>",
+    "must": [
+      "Findings in a Before | After | Why table",
+      "Flags the left bar, transition-all, same radius on parent and child, and stacked edges",
+      "Highest-leverage fix listed first"
+    ],
+    "must_not": [
+      "Praise with no findings"
+    ]
+  }
+]

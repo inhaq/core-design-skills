@@ -1,0 +1,3 @@
+/* Motion with no reduced-motion block anywhere in the file. */
+.shell { min-height: 100vh; }
+.stars { animation: twinkle 6s ease-in-out infinite alternate; }
