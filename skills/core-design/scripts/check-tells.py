@@ -6,9 +6,14 @@ Usage:
 
     --only always   print only [always] hits
     --rtl           also flag physical left/right spacing (ml-*, pr-*)
+    -h, --help      show this help
 
 Prints one line per hit: file:line  [tag] name  ->  fix
-Exit code is 1 when any [always] tell is found, else 0.
+Exit code is 1 when any [always] tell is found, 2 for a bad flag or a path
+that doesn't exist, else 0.
+
+When scanning a folder, test, story, and fixture files are skipped. Pass a
+file directly to scan it anyway.
 
 A hit is a prompt to look, not a verdict. `[default]` tells are fine when the
 aesthetic direction calls for them. See references/anti-patterns.md.
@@ -28,11 +33,15 @@ EXTENSIONS = {
     ".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte", ".astro", ".mdx",
 }
 SKIP_DIRS = {"node_modules", ".git", "dist", "build", ".next", ".nuxt", ".svelte-kit", ".astro", "coverage", "vendor"}
+# Skipped when walking a folder: tests, stories, and fixtures hold fake names and deliberate tells.
+TEST_FILE = re.compile(r"\.(test|spec|stories)\.[cm]?[jt]sx?$|(^|/)(__tests__|__mocks__|e2e|fixtures)/")
 
 IGNORE = "check-tells: ignore"
 
 # Characters allowed between two utility classes in the same class string.
 SAME_CLASS = r"[^\"'`\n]*"
+# Loaders keep moving under reduced motion: they show work.
+LOADER = r"spin|loader|loading|progress|indeterminate|skeleton"
 
 # (tag, name, regex, fix, skip_if_line_matches)
 TELLS: list[tuple[str, str, str, str, str | None]] = [
@@ -53,6 +62,7 @@ TELLS: list[tuple[str, str, str, str, str | None]] = [
     ("default", "wide uppercase tracking",
      rf"\buppercase\b{SAME_CLASS}\btracking-(wider|widest|\[0\.[2-9])|\btracking-(wider|widest|\[0\.[2-9][^\]]*\]){SAME_CLASS}\buppercase\b",
      "sentence case, modest tracking", None),
+    ("default", "italic or gradient word in headline", r"<h1\b[^>]*>[^<]*<(em|i)\b|<h1\b[^>]*>[^<]*<span[^>]*(italic|bg-clip-text)", "let the whole line carry the weight", None),
     # Layout
     ("always", "h-screen", r"(?<![\w-])h-screen\b", "h-svh / h-dvh or content height", None),
     ("default", "100vh height", r"(?<![\w-])height:\s*100vh", "100svh / 100dvh on full-height sections", None),
@@ -60,37 +70,50 @@ TELLS: list[tuple[str, str, str, str, str | None]] = [
     ("rtl", "physical left/right spacing", r"\b[mp][lr]-(\d+|\[)", "logical ms-* / ps-* for RTL", None),
     # Motion
     ("always", "transition: all", r"transition:\s*all\b|\btransition-all\b", "list exact properties", None),
-    ("always", "bounce/ping", r"\banimate-(bounce|ping)\b", "remove; motion that never stops is noise", None),
+    ("default", "bounce/ping", r"\banimate-(bounce|ping)\b", "fine on loaders and live-status dots; remove on content and CTAs", None),
     ("default", "pulse", r"\banimate-pulse\b", "fine on skeleton loaders; remove on dots, badges, and CTAs", None),
-    ("default", "infinite animation", r"animation:[^;]*\binfinite\b", "decorative loops: remove, or stop under reduced motion",
-     r"spin|loader|loading|progress|indeterminate|skeleton"),
+    ("default", "infinite animation", r"animation:[^;]*\binfinite\b", "decorative loops: remove, or stop under reduced motion", LOADER),
     ("default", "hover lift on cards", r"hover:-translate-y-(0\.5|1|2)\b", "subtle feedback only on clickable things", None),
     ("always", "scale(0) entrance", r"scale\(0\)|\bscale-0\b", "start from scale(0.95) + opacity 0", None),
-    ("always", "layout property transition", r"transition(-property)?:[^;]*\b(width|height|top|left|right|bottom|margin|padding)\b", "transform for movement and size", None),
+    ("always", "layout property transition", r"transition(-property)?:[^;]*(?<![\w-])((max|min)-)?(width|height|top|left|right|bottom|margin|padding)\b", "transform for movement and size", None),
     # Accessibility and code
-    ("always", "focus outline removed", rf"\bfocus:outline-none\b(?!{SAME_CLASS}\bfocus(-visible)?:(ring|outline))|outline:\s*(none|0)\b", "replace with a visible focus ring",
-     r":not\(:focus-visible\)"),
+    ("always", "focus outline removed", r"\bfocus(-visible)?:outline-(none|hidden)\b|outline:\s*(none|0)\b", "replace with a visible focus ring", None),
+    ("default", "bare outline-none", r"(?<![\w:-])outline-(none|hidden)\b", "check focus: a focus-visible ring, or a highlight on menu items", None),
     ("always", "z-index 9999", r"z-index:\s*9{3,}|\bz-\[9{3,}\]", "use a z-index scale", None),
     ("always", "!important", r"!important", "fix the cascade", r"^\s*(return|const|let|var)\b|/.*!important.*/[gimsuy]*"),
-    # Content and copy
-    ("always", "placeholder people/companies", r"\b(Acme( Inc| Corp)?|Jane Cooper|John Doe|Jane Doe|lorem ipsum)\b", "real or realistic microcopy",
+    # Content and copy. Names are case-sensitive: "acme" in a URL slug is not copy.
+    ("always", "placeholder people/companies", r"(?-i:\b(Acme( Inc| Corp)?|Jane Cooper|John Doe|Jane Doe|[Ll]orem ipsum)\b)", "real or realistic microcopy",
      r"placeholder\s*[=:]|\be\.g\."),
-    ("always", "buzzword copy", r"\b(seamless(ly)?|effortless(ly)?|supercharge|unleash|elevate your|next-gen|unlock the power)\b", "say what it actually does", None),
+    ("always", "buzzword copy", r"\b(seamless(ly)?|effortless(ly)?|supercharge|unleash|elevate your|next-gen|unlock the power)\b", "say what it actually does",
+     r"^\s*import\b|\brequire\(|\bfrom\s+['\"]"),
     ("default", "emoji in UI copy", "[\u2728\U0001F680\U0001F525\U0001F4A1\u26A1\U0001F389]", "real icon or none", None),
 ]
 
 # Tells that can span lines. Matched on the whole file.
 MULTILINE: list[tuple[str, str, str, str]] = [
-    ("always", "div with onClick", r"<div\b[^>]*?\son[Cc]lick=", "<button> or <a>"),
+    # `=>` in an earlier attribute doesn't end the tag. A div with a role or aria-hidden is a deliberate choice.
+    ("always", "div with onClick", r"<div\b(?![^>]*\s(role|aria-hidden)=)(?:=>|[^>])*?\s(on[Cc]lick|@click|on:click|v-on:click)=", "<button> or <a>"),
 ]
 
 REDUCED_MOTION = re.compile(r"prefers-reduced-motion|motion-reduce:|motion-safe:")
 # Blocks where !important is expected: reduced-motion overrides and print styles.
 OVERRIDE_BLOCK = re.compile(r"@media[^{]*(prefers-reduced-motion|\bprint\b)")
-COMMENT_LINE = re.compile(r"^\s*(//|/\*|\*|<!--|\{/\*)")
-# Input groups move the ring to the wrapper; look up to 20 lines up for it.
-FOCUS_WITHIN = re.compile(r"focus-within:|:focus-within")
+# A line starting with `*` continues a block comment, unless it is a selector (`*:focus {`, `* {`).
+COMMENT_LINE = re.compile(r"^\s*(//|/\*|\*(?=\s|/|$)(?!.*\{)|<!--|\{/\*)")
+BLOCK_OPEN = re.compile(r"^\s*(/\*|\{/\*|<!--)(?!.*(\*/|-->))")
+BLOCK_CLOSE = re.compile(r"\*/|-->")
 MOTION = re.compile(r"@keyframes|animation:|\banimate-\w|transition:\s*(transform|translate)", re.IGNORECASE)
+IS_LOADER = re.compile(LOADER, re.IGNORECASE)
+
+# Removing the outline is fine when something else shows focus:
+FOCUS_TELLS = ("focus outline removed", "bare outline-none")
+# a ring within 3 lines either way (multi-line cn() strings); ring-0 and outline-none are removals, not rings,
+RING = re.compile(r"focus(-visible)?:(ring-(?!0\b)|outline-(?!none|hidden|0))")
+# a focus-within ring on an input group's wrapper, up to 20 lines up,
+FOCUS_WITHIN = re.compile(r"focus-within:|:focus-within")
+# or no ring is needed: keyboard focus keeps its ring, or only script moves focus there (skip-link <main>).
+NO_RING_NEEDED = re.compile(r":not\(:focus-visible\)|\bmain\b[^,{]*:focus|tabindex=.?-1", re.IGNORECASE)
+CSS_OUTLINE = re.compile(r"^\s*outline\s*:")
 
 COMPILED = [
     (tag, name, re.compile(rx, re.IGNORECASE), fix, re.compile(skip, re.IGNORECASE) if skip else None)
@@ -107,8 +130,10 @@ def iter_files(paths: list[str]):
         for dirpath, dirnames, filenames in os.walk(root):
             dirnames[:] = [d for d in dirnames if d not in SKIP_DIRS]
             for fn in filenames:
-                if os.path.splitext(fn)[1].lower() in EXTENSIONS:
-                    yield os.path.join(dirpath, fn)
+                path = os.path.join(dirpath, fn)
+                rel = os.path.relpath(path, root).replace(os.sep, "/")
+                if os.path.splitext(fn)[1].lower() in EXTENSIONS and not TEST_FILE.search(rel):
+                    yield path
 
 
 def ignored(lines: list[str], lineno: int) -> bool:
@@ -135,6 +160,18 @@ def override_lines(lines: list[str]) -> set[int]:
     return inside
 
 
+def focus_shown(lines: list[str], lineno: int, selector: str) -> bool:
+    """True when a removed outline at this line is covered by a ring, a wrapper, or doesn't need one."""
+    line = lines[lineno - 1]
+    # A CSS `outline:` declaration belongs to its block's selector; a class string to its own line.
+    context = selector if CSS_OUTLINE.match(line) else line
+    return bool(
+        NO_RING_NEEDED.search(context)
+        or any(RING.search(l) for l in lines[max(0, lineno - 4):lineno + 3])
+        or any(FOCUS_WITHIN.search(l) for l in lines[max(0, lineno - 20):lineno])
+    )
+
+
 def scan(path: str, rtl: bool = False) -> list[tuple[int, str, str, str]]:
     try:
         with open(path, encoding="utf-8", errors="replace") as fh:
@@ -144,7 +181,15 @@ def scan(path: str, rtl: bool = False) -> list[tuple[int, str, str, str]]:
     lines = text.splitlines() or [""]
     blocks = override_lines(lines)
     hits = []
+    in_comment = False
+    selector = ""  # the last line that opened a `{` block
     for lineno, line in enumerate(lines, 1):
+        if in_comment:
+            in_comment = not BLOCK_CLOSE.search(line)
+            continue
+        in_comment = bool(BLOCK_OPEN.match(line))
+        if "{" in line:
+            selector = line
         if COMMENT_LINE.match(line) and IGNORE not in line:
             continue
         for tag, name, rx, fix, skip in COMPILED:
@@ -152,23 +197,22 @@ def scan(path: str, rtl: bool = False) -> list[tuple[int, str, str, str]]:
                 continue
             if name == "!important" and lineno in blocks:
                 continue
-            if name == "focus outline removed" and any(
-                FOCUS_WITHIN.search(l) for l in lines[max(0, lineno - 20):lineno]
-            ):
-                continue
             if skip and skip.search(line):
                 continue
-            if rx.search(line) and not ignored(lines, lineno):
-                hits.append((lineno, "default" if tag == "rtl" else tag, name, fix))
+            if not rx.search(line) or ignored(lines, lineno):
+                continue
+            if name in FOCUS_TELLS and focus_shown(lines, lineno, selector):
+                continue
+            hits.append((lineno, "default" if tag == "rtl" else tag, name, fix))
     for tag, name, rx, fix in COMPILED_MULTI:
         for m in rx.finditer(text):
             lineno = text.count("\n", 0, m.start()) + 1
             if not ignored(lines, lineno):
                 hits.append((lineno, tag, name, fix))
-    # File-level: motion with no reduced-motion handling anywhere in the file.
-    if path.endswith((".css", ".scss", ".sass", ".less")) and MOTION.search(text) and not REDUCED_MOTION.search(text):
-        m = MOTION.search(text)
-        hits.append((text.count("\n", 0, m.start()) + 1, "always", "motion with no reduced-motion fallback",
+    # File-level: motion with no reduced-motion handling anywhere in the file. Loaders don't count.
+    motion = [n for n, l in enumerate(lines, 1) if MOTION.search(l) and not IS_LOADER.search(l)]
+    if path.endswith((".css", ".scss", ".sass", ".less")) and motion and not REDUCED_MOTION.search(text):
+        hits.append((motion[0], "always", "motion with no reduced-motion fallback",
                      "add @media (prefers-reduced-motion: reduce)"))
     hits.sort()
     return hits
@@ -176,6 +220,9 @@ def scan(path: str, rtl: bool = False) -> list[tuple[int, str, str, str]]:
 
 def main(argv: list[str]) -> int:
     args = argv[1:]
+    if "-h" in args or "--help" in args:
+        print(__doc__)
+        return 0
     only = None
     rtl = "--rtl" in args
     if "--only" in args:
@@ -186,6 +233,10 @@ def main(argv: list[str]) -> int:
             return 2
         del args[i:i + 2]
     paths = [a for a in args if a != "--rtl"] or ["."]
+    missing = [p for p in paths if not os.path.exists(p)]
+    if missing:
+        print(f"no such path: {', '.join(missing)}", file=sys.stderr)
+        return 2
     always = 0
     total = 0
     counts: dict[tuple[str, str], int] = {}

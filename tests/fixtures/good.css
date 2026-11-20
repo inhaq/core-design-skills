@@ -3,6 +3,16 @@
 :focus:not(:focus-visible) { outline: none; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
+/* The same rule as Prettier writes it. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip-link target: only script moves focus here. */
+main:focus {
+  outline: none;
+}
+
 .spinner { animation: spin 1s linear infinite; }
 .progress-bar { animation: progress-indeterminate 1.2s ease-in-out infinite; }
 
@@ -13,6 +23,12 @@
   transform: translateX(100%);
   transition: transform 300ms var(--ease-drawer), opacity 200ms var(--ease-out);
 }
+
+.link { transition: color 150ms ease, border-left-color 150ms ease; }
+
+/*
+  A seamless surface: words inside a block comment are not copy.
+*/
 
 @media print {
   .site-header { display: none !important; }

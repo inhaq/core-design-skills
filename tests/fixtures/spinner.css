@@ -1,0 +1,3 @@
+/* A loader keeps spinning under reduced motion, so this file needs no fallback. The checker must report nothing here. */
+.spinner { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

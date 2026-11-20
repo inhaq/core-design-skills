@@ -11,3 +11,9 @@
   onClick={open}>Row</div> {/* div with onClick, starts on line 9 */}
 <h1>Unleash your workflow</h1> {/* buzzword copy */}
 <a className="border-l-4">Kept</a> {/* check-tells: ignore — design review approved */}
+// The ignore pragma above covers the next line too, so this line stays a comment.
+<button className="focus-visible:outline-none">Save</button> {/* focus outline removed: focus-visible */}
+<input className="focus:outline-none focus:ring-0" /> {/* focus outline removed: ring-0 removes the ring too */}
+<input className="focus:outline-hidden" /> {/* focus outline removed: Tailwind v4 */}
+<div onKeyDown={(e) => e.key === "Enter" && open()} onClick={open}>Row</div> {/* div with onClick after an arrow function */}
+<h1>Ship <em>faster</em> today</h1> {/* italic or gradient word in headline */}

@@ -1,0 +1,3 @@
+/* Each rule carries the tell named in its comment. Line numbers are asserted in tests. */
+*:focus { outline: none; } /* focus outline removed: a `*` selector, not a comment line */
+* { transition: all 0.2s ease; } /* transition: all */
