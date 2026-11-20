@@ -45,11 +45,14 @@ Put `check-tells: ignore` in a comment on the same line or the line above, with 
 | Top accent bar | default | `border-t-4`, `border-top: 4px solid` |
 | Glassmorphism | default | `backdrop-blur`, `backdrop-filter: blur` |
 | Wide uppercase tracking | default | `uppercase` + `tracking-widest`, either order |
-| 100vh height | always | `h-screen`, `height: 100vh` |
+| `h-screen` | always | `h-screen` (not `min-h-screen`) |
+| 100vh height | default | `height: 100vh`; fine on hidden filler layers |
 | 100vh min-height | default | `min-h-screen`, `min-height: 100vh` |
 | Physical left/right spacing | default | `ml-*`, `pr-*` instead of `ms-*`, `pe-*` |
 | `transition: all` | always | `transition-all`, `transition: all` |
-| Infinite motion | always | `animate-pulse`, `animate-bounce`, `animate-ping`, `infinite`; spinners and progress exempt |
+| Pulse/bounce/ping | always | `animate-pulse`, `animate-bounce`, `animate-ping`; skeletons exempt |
+| Infinite animation | default | `animation: … infinite`; spinners and progress exempt |
+| No reduced-motion fallback | always | a stylesheet with motion and no `prefers-reduced-motion`, `motion-safe:`, or `motion-reduce:` |
 | Hover lift | default | `hover:-translate-y-1` |
 | `scale(0)` entrance | always | `scale(0)`, `scale-0` |
 | Layout property transition | always | `transition: width …`, `top`, `left`, `margin`, `padding` |

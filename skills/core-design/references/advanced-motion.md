@@ -63,7 +63,7 @@ Use it for hold-to-confirm progress fills (`inset(0 100% 0 0)` → `inset(0 0 0 
 .toast {
   opacity: 1;
   transform: translateY(0);
-  transition: opacity 400ms ease, transform 400ms ease;
+  transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
 
   @starting-style {
     opacity: 0;

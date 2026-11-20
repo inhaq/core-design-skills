@@ -3,7 +3,7 @@
 <a style={{ borderInlineStart: 0 }} className="shadow-[inset_3px_0_0_var(--accent)]">Inbox</a> {/* left-edge bar via inset shadow */}
 <a className="relative before:absolute before:left-0 before:w-1 before:bg-accent">Team</a> {/* left-edge bar via ::before */}
 <p className="tracking-widest uppercase">Features</p> {/* wide uppercase tracking */}
-<section className="h-screen">Hero</section> {/* 100vh height */}
+<section className="h-screen">Hero</section> {/* h-screen */}
 <button className="transition-all">Go</button> {/* transition: all */}
 <button className="focus:outline-none">Go</button> {/* focus outline removed */}
 <div

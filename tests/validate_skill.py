@@ -38,6 +38,15 @@ for rel in sorted(set(re.findall(r"`((?:references|scripts)/[\w.-]+)`", skill)))
     if not (SKILL_DIR / rel).exists():
         errors.append(f"SKILL.md: points to missing file {rel}")
 
+# Every catalog item carries a tag and a fix, in the format the file promises.
+catalog = (SKILL_DIR / "references" / "anti-patterns.md").read_text(encoding="utf-8")
+for n, line in enumerate(catalog.splitlines(), 1):
+    if line.startswith("- **"):
+        if not re.search(r"`\[(always|default)\]`", line):
+            errors.append(f"anti-patterns.md:{n}: missing [always]/[default] tag")
+        if "→" not in line:
+            errors.append(f"anti-patterns.md:{n}: missing → fix")
+
 try:
     cases = json.loads((ROOT / "evals" / "cases.json").read_text(encoding="utf-8"))
     for case in cases:

@@ -29,7 +29,7 @@ class BadFixture(unittest.TestCase):
         self.assertIn((5, "wide uppercase tracking"), self.hits)
 
     def test_core_tells(self):
-        self.assertIn((6, "100vh height"), self.hits)
+        self.assertIn((6, "h-screen"), self.hits)
         self.assertIn((7, "transition: all"), self.hits)
         self.assertIn((8, "focus outline removed"), self.hits)
         self.assertIn((12, "buzzword copy"), self.hits)
@@ -44,6 +44,22 @@ class BadFixture(unittest.TestCase):
 class GoodFixture(unittest.TestCase):
     def test_no_false_alarms(self):
         self.assertEqual(check_tells.scan(str(FIXTURES / "good.css")), [])
+
+
+class Tags(unittest.TestCase):
+    def tags(self, path):
+        return {name: tag for _line, tag, name, _fix in check_tells.scan(str(path))}
+
+    def test_min_h_screen_is_not_h_screen(self):
+        tags = self.tags(FIXTURES / "no-reduced-motion.css")
+        self.assertNotIn("h-screen", tags)
+        self.assertEqual(tags["100vh min-height"], "default")
+
+    def test_decorative_loop_is_default(self):
+        self.assertEqual(self.tags(FIXTURES / "no-reduced-motion.css")["infinite animation"], "default")
+
+    def test_missing_reduced_motion_is_always(self):
+        self.assertEqual(self.tags(FIXTURES / "no-reduced-motion.css")["motion with no reduced-motion fallback"], "always")
 
 
 class ExitCode(unittest.TestCase):

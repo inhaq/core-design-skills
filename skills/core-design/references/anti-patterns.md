@@ -151,6 +151,7 @@ If you cannot say what a decoration reinforces, remove it.
 - **Content hidden at `opacity: 0` until JS runs.** `[always]` Vanishes when JS fails or loads slowly. → Hide only under a `.js` class or use `@starting-style`.
 - **Layout properties animated** (`width`, `height`, `top`, `left`, `margin`). `[always]` Janks. → `transform` for movement and size.
 - **`transition: all`.** `[always]` → List exact properties.
+- **Animation with no reduced-motion fallback.** `[always]` → `@media (prefers-reduced-motion: reduce)` that stops movement and decorative loops.
 
 ## Hierarchy
 
@@ -212,6 +213,7 @@ If you cannot say what a decoration reinforces, remove it.
 - **`<div onClick>` where a `<button>` or `<a>` belongs.** `[always]` No keyboard or screen-reader support. → The native element.
 - **Icon-only buttons with no `aria-label`.** `[always]` → Add one that names the action.
 - **`outline: none` / `focus:outline-none` with no replacement ring.** `[always]` → `:focus-visible` ring with ≥ 3:1 contrast. Removing the outline only under `:focus:not(:focus-visible)` is fine.
+- **Focus ring drawn only with `box-shadow`** (Tailwind `ring-*` alone). `[default]` Disappears in Windows high-contrast mode. → `outline` on `:focus-visible`, or add `outline: 2px solid transparent` under the ring.
 - **Content that only appears on hover.** `[always]` Unreachable on touch and keyboard. → Show it always, or on focus and tap too.
 - **Images without `width` and `height`.** `[always]` Layout shifts as they load. → Set both, or `aspect-ratio`.
 - **Hardcoded color, spacing, and radius values.** `[always]` → Tokens.

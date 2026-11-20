@@ -1,6 +1,6 @@
 ---
 name: core-design
-description: Generates and reviews frontend UI that avoids generic AI-default aesthetics. Use when building or critiquing components, pages, dashboards, marketing sites, design systems, or any HTML/CSS/React/Vue/Svelte interface, or when the user mentions hierarchy, typography, spacing, color, layout, motion, or polish.
+description: Generates and reviews frontend UI that avoids generic AI-default aesthetics. Use when building or critiquing components, pages, dashboards, marketing sites, design systems, or any HTML/CSS/React/Vue/Svelte interface, or when the user mentions hierarchy, typography, spacing, color, layout, motion, or polish, or says a UI looks generic or AI-generated.
 license: MIT
 ---
 
@@ -80,7 +80,7 @@ Then ask:
 
 The most under-applied skill in AI-generated UI. Without it, every element competes and nothing stands out.
 
-**Establish hierarchy through size, weight, color, position, contrast, and whitespace** — in that order of leverage.
+**Establish hierarchy through weight, color, size, position, contrast, and whitespace.** Reach for weight and color first; size jumps are the blunt tool.
 
 - One element dominates each screen. If two compete, demote one.
 - Style secondary information secondarily — smaller, lighter, or muted.
@@ -142,7 +142,8 @@ If you cannot explain what the atmosphere reinforces, remove it.
 
 ### Accessibility
 
-- Body text contrast ≥ 4.5:1. Large text (18pt+ or 14pt bold) ≥ 3:1.
+- Body text contrast ≥ 4.5:1. Large text (24px+, or 18.66px+ bold) ≥ 3:1.
+- Focus rings and input borders ≥ 3:1 against their background.
 - Never communicate state with color alone. Pair with icons, text, or shape.
 
 ## Layout
@@ -178,9 +179,8 @@ A card creates a container; a container implies a thing. If the content is just 
 
 ### Inputs
 
-- Labels above inputs, not as placeholders.
 - Input height matches button height for visual rhythm.
-- Inline error messages near the field, with a fix.
+- Labels, errors, and required marks: see [Forms, tables, and data](#forms-tables-and-data).
 
 ### Cards
 
@@ -204,7 +204,16 @@ A card creates a container; a container implies a thing. If the content is just 
 
 Always implement: default, hover, focus-visible, active, disabled, loading, empty, error, success.
 
-Never use `outline: none` without replacing the focus ring. Empty states aren't "No data." — they explain what would be here and how to get something here.
+Never use `outline: none` without replacing the focus ring. Use `outline`, not `box-shadow`, for the ring: shadows vanish in Windows high-contrast mode (`forced-colors`).
+
+```css
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+```
+
+Empty states aren't "No data." — they explain what would be here and how to get something here.
 
 **No colored edge bars as status.** Don't mark active, selected, or callout state with a colored left (or top) bar. Use background tint, icon state, or a weight shift. See `references/anti-patterns.md` → Borders, boxes, and containers.
 
@@ -216,6 +225,7 @@ Never use `outline: none` without replacing the focus ring. Empty states aren't 
 
 ## Forms, tables, and data
 
+- Labels above fields, never placeholders as labels.
 - Errors: a message under the field that says how to fix it, linked with `aria-describedby`. Never a red border alone.
 - Mark required or optional, whichever is rarer.
 - Keep submit enabled; on submit, say what is missing.
@@ -226,6 +236,7 @@ Never use `outline: none` without replacing the focus ring. Empty states aren't 
 ## Dark mode and responsive
 
 - Dark mode is its own token set, not an inversion. Lift surfaces with lighter tone instead of shadows; drop text slightly below pure white.
+- Set `color-scheme: light dark` (or the active theme) on `:root` so form controls and scrollbars match.
 - Use `100svh` / `100dvh`, not `100vh`, for full-height sections.
 - Give images `width` and `height` (or `aspect-ratio`) to prevent layout shift.
 - Nothing essential lives behind hover alone.
@@ -331,6 +342,8 @@ The aggregate of small correct details is the difference between forgettable UI 
 - **Asymmetric press timing** — slow on press when deliberate (hold-to-delete), snappy on release.
 - **Stagger** — when many items enter, delay each by 30–80ms.
 - **Blur to mask transitions** — a brief `filter: blur(2px)` smooths crossfades that look like two objects swapping.
+- **Stable scrollbars** — `scrollbar-gutter: stable` on the scroll root so opening a modal doesn't shift the page.
+- **Anchor offsets** — `scroll-margin-top` on headings equal to the sticky header height, so jump links don't hide the target.
 
 ### Concentric border radius
 
@@ -406,7 +419,7 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] One accent color reserved for the most important action
 - [ ] Neutrals do the heavy lifting
 - [ ] Semantic colors used consistently
-- [ ] Body contrast ≥ 4.5:1; not relying on color alone
+- [ ] Body contrast ≥ 4.5:1; focus rings and borders ≥ 3:1; not relying on color alone
 
 **Components**
 - [ ] Concentric radii (inner = outer − inset)
@@ -414,7 +427,7 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] All interactive states implemented
 - [ ] Hit areas ≥ 44×44px
 - [ ] Cards represent distinct entities, not generic containers
-- [ ] Visible focus ring; `outline: none` is replaced if used
+- [ ] Visible `outline` focus ring (not `box-shadow` alone); `outline: none` is replaced if used
 - [ ] No colored left/top bars as active, selected, or callout signal
 - [ ] One edge treatment per element; no nested cards
 
@@ -422,7 +435,7 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] Errors are text near the field, not color alone
 - [ ] Tables use one row separator; numbers right-aligned and tabular
 - [ ] `svh`/`dvh` instead of `100vh`; images have dimensions
-- [ ] Dark mode uses its own tokens
+- [ ] Dark mode uses its own tokens; `color-scheme` set
 - [ ] Logical properties for left/right; long strings don't clip
 
 **Copy**

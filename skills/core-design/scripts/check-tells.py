@@ -51,12 +51,15 @@ TELLS: list[tuple[str, str, str, str, str | None]] = [
      rf"\buppercase\b{SAME_CLASS}\btracking-(wider|widest|\[0\.[2-9])|\btracking-(wider|widest|\[0\.[2-9][^\]]*\]){SAME_CLASS}\buppercase\b",
      "sentence case, modest tracking", None),
     # Layout
-    ("always", "100vh height", r"\bh-screen\b|(?<!-)height:\s*100vh", "100svh / 100dvh or content height", None),
-    ("default", "100vh min-height", r"\bmin-h-screen\b|min-height:\s*100vh", "min-h-dvh / 100dvh", None),
+    ("always", "h-screen", r"(?<![\w-])h-screen\b", "h-svh / h-dvh or content height", None),
+    ("default", "100vh height", r"(?<![\w-])height:\s*100vh", "100svh / 100dvh on full-height sections", None),
+    ("default", "100vh min-height", r"(?<![\w-])min-h-screen\b|min-height:\s*100vh", "min-h-dvh / 100dvh", None),
     ("default", "physical left/right spacing", r"\b[mp][lr]-(\d+|\[)", "logical ms-* / ps-* for RTL", None),
     # Motion
     ("always", "transition: all", r"transition:\s*all\b|\btransition-all\b", "list exact properties", None),
-    ("always", "infinite pulse/bounce", r"\banimate-(pulse|bounce|ping)\b|animation:[^;]*infinite", "remove; motion that never stops is noise",
+    ("always", "pulse/bounce/ping", r"\banimate-(pulse|bounce|ping)\b", "remove; motion that never stops is noise",
+     r"skeleton"),
+    ("default", "infinite animation", r"animation:[^;]*\binfinite\b", "decorative loops: remove, or stop under reduced motion",
      r"spin|loader|loading|progress|indeterminate|skeleton"),
     ("default", "hover lift on cards", r"hover:-translate-y-(0\.5|1|2)\b", "subtle feedback only on clickable things", None),
     ("always", "scale(0) entrance", r"scale\(0\)|\bscale-0\b", "start from scale(0.95) + opacity 0", None),
@@ -77,7 +80,8 @@ MULTILINE: list[tuple[str, str, str, str]] = [
     ("always", "div with onClick", r"<div\b[^>]*?\son[Cc]lick=", "<button> or <a>"),
 ]
 
-REDUCED_MOTION = re.compile(r"prefers-reduced-motion")
+REDUCED_MOTION = re.compile(r"prefers-reduced-motion|motion-reduce:|motion-safe:")
+MOTION = re.compile(r"@keyframes|animation:|\banimate-\w|transition:\s*(transform|translate)", re.IGNORECASE)
 
 COMPILED = [
     (tag, name, re.compile(rx, re.IGNORECASE), fix, re.compile(skip, re.IGNORECASE) if skip else None)
@@ -144,6 +148,11 @@ def scan(path: str) -> list[tuple[int, str, str, str]]:
             lineno = text.count("\n", 0, m.start()) + 1
             if not ignored(lines, lineno):
                 hits.append((lineno, tag, name, fix))
+    # File-level: motion with no reduced-motion handling anywhere in the file.
+    if path.endswith((".css", ".scss", ".sass", ".less")) and MOTION.search(text) and not REDUCED_MOTION.search(text):
+        m = MOTION.search(text)
+        hits.append((text.count("\n", 0, m.start()) + 1, "always", "motion with no reduced-motion fallback",
+                     "add @media (prefers-reduced-motion: reduce)"))
     hits.sort()
     return hits
 
