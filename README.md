@@ -53,12 +53,17 @@ Nothing inside `SKILL.md` is tool-specific.
 .
 ├── README.md                              # this file
 ├── AGENTS.md                              # repo-level instructions for agents working on the skill
+├── evals/                                 # test prompts for the skill (not installed)
 └── skills/
     └── core-design/
-        ├── SKILL.md                       # entry point — frontmatter + main instructions (~370 lines)
-        └── references/
-            ├── anti-patterns.md           # AI-default tells to avoid; loaded when reviewing or shipping
-            └── advanced-motion.md         # springs, clip-path, gestures, framework notes; loaded when needed
+        ├── SKILL.md                       # entry point — frontmatter + main instructions (~435 lines)
+        ├── references/
+        │   ├── anti-patterns.md           # AI-default tells with fixes; loaded when reviewing or shipping
+        │   ├── grep-tells.md              # how to run and extend the tell checker
+        │   ├── examples.md                # before/after code for common tells
+        │   └── advanced-motion.md         # springs, clip-path, gestures, framework notes; loaded when needed
+        └── scripts/
+            └── check-tells.py             # regex scan for tells; exit 1 on [always] hits
 ```
 
 The split keeps the always-loaded body small and pushes heavy reference material into files the agent only reads on demand. This is the [progressive disclosure pattern](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices#progressive-disclosure-patterns) recommended for Skills.
@@ -105,10 +110,17 @@ When you do not control the tool's configuration, paste the relevant section int
 - Aesthetic direction
 - Visual hierarchy
 - Spacing, typography, color
-- Layout, components, states
+- Layout, components, states, containers
+- Forms, tables, and data; dark mode and responsive; copy
 - Motion — when to animate, easing, duration, accessibility
 - Polish details — concentric radii, optical alignment, tabular nums, image outlines, scale on press
 - Output expectations and Review checklist
+
+The references add a tagged anti-pattern catalog (each tell with its fix), before/after examples, and a checker:
+
+```bash
+python3 skills/core-design/scripts/check-tells.py src/
+```
 
 
 ## Contributing
@@ -119,7 +131,7 @@ The skill is meant to stay short, opinionated, and practical. When extending it:
 - Stay tool-agnostic. Tool-specific notes go in `AGENTS.md` or this README.
 - Prefer removing rules over adding them. Every token costs context every time the skill loads.
 - Frame defaults as defaults. Where a brand or context could justifiably deviate, say so.
-- Update the Review Checklist and `references/anti-patterns.md` together when adding or forbidding patterns.
+- Update the Review Checklist and `references/anti-patterns.md` together when adding or forbidding patterns. Add a regex to `scripts/check-tells.py` and a case to `evals/cases.json` when you can.
 - Keep references one level deep from `SKILL.md`. No nested reference chains.
 
 ## License

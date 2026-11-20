@@ -19,13 +19,18 @@ Generate and review frontend UI that feels considered rather than generic. The d
 - [Color](#color)
 - [Layout](#layout)
 - [Components](#components)
+- [Forms, tables, and data](#forms-tables-and-data)
+- [Dark mode and responsive](#dark-mode-and-responsive)
+- [Copy](#copy)
 - [Motion](#motion)
 - [Polish details](#polish-details)
 - [Output expectations](#output-expectations)
 - [Review checklist](#review-checklist)
 
 Detailed reference material lives in `references/`:
-- `references/anti-patterns.md` — the catalog of AI-default tells to avoid. Read when reviewing UI for genericness or before shipping.
+- `references/anti-patterns.md` — the catalog of AI-default tells, each with a fix and an `[always]` / `[default]` tag. Read when reviewing UI for genericness or before shipping.
+- `references/grep-tells.md` — how to run `scripts/check-tells.py`, a fast scan for tells in source. Read before a review pass.
+- `references/examples.md` — before/after code for the most common tells. Read when you need a concrete fix.
 - `references/advanced-motion.md` — springs, `clip-path`, gestures, performance under load, framework-specific notes. Read when the core motion rules below are not enough.
 
 ## How to use
@@ -34,7 +39,7 @@ Detailed reference material lives in `references/`:
 2. Pick a clear aesthetic direction (see [Aesthetic direction](#aesthetic-direction)).
 3. Apply principles in priority order: **hierarchy → spacing → typography → color → components → motion → polish**.
 4. Run the [Review checklist](#review-checklist) before finishing.
-5. Verify nothing in `references/anti-patterns.md` is present in the output.
+5. Run `scripts/check-tells.py` on the output, then verify nothing in `references/anti-patterns.md` is present.
 
 **Conflict resolution.** When rules conflict, prefer clarity, hierarchy, and accessibility over style.
 
@@ -44,7 +49,7 @@ Detailed reference material lives in `references/`:
 
 ## Non-negotiables
 
-The rules that prevent the most common AI-generated UI mistakes. Apply in priority order: **hierarchy → spacing → typography → color → components → motion**.
+The rules that prevent the most common AI-generated UI mistakes.
 
 1. One primary action per screen. Secondary actions look secondary.
 2. One accent color. Neutrals do everything else.
@@ -195,7 +200,36 @@ Always implement: default, hover, focus-visible, active, disabled, loading, empt
 
 Never use `outline: none` without replacing the focus ring. Empty states aren't "No data." — they explain what would be here and how to get something here.
 
-**Don't signal active/selected state with a colored left bar alone.** It's a cliche, and adjacent items each carrying their own left accent creates competing hierarchies. Use background tint, icon state changes, or a typography weight shift. Reserve top/bottom borders for section grouping, not per-item status.
+**No colored edge bars as status.** Don't mark active, selected, or callout state with a colored left (or top) bar. Use background tint, icon state, or a weight shift. See `references/anti-patterns.md` → Borders, boxes, and containers.
+
+### Containers
+
+- One edge treatment per element: border *or* ring *or* shadow.
+- Don't nest cards. Flatten, and separate with spacing or tone.
+- Dividers *or* a border around the group, not both.
+
+## Forms, tables, and data
+
+- Errors: a message under the field that says how to fix it, linked with `aria-describedby`. Never a red border alone.
+- Mark required or optional, whichever is rarer.
+- Keep submit enabled; on submit, say what is missing.
+- Tables: one row separator (dividers, zebra, or hover), right-align numbers, `tabular-nums`.
+- Don't truncate key data. Wrap or widen.
+- Skeletons match final dimensions. Delay spinners ~300ms so fast loads don't flash.
+
+## Dark mode and responsive
+
+- Dark mode is its own token set, not an inversion. Lift surfaces with lighter tone instead of shadows; drop text slightly below pure white.
+- Use `100svh` / `100dvh`, not `100vh`, for full-height sections.
+- Give images `width` and `height` (or `aspect-ratio`) to prevent layout shift.
+- Nothing essential lives behind hover alone.
+
+## Copy
+
+- Say what the product does, specifically. No "seamless," "supercharge," "unleash," "AI-powered."
+- Sentence case for headings and buttons, consistently.
+- Vary sentence structure across features. Avoid em-dash and three-item rhythms in every line.
+- No placeholder names (Acme, Jane Cooper, lorem ipsum) and no invented stats or testimonials.
 
 ## Motion
 
@@ -253,16 +287,23 @@ UI animations stay under 300ms by default. Longer durations are acceptable when 
 
 ### Accessibility
 
+Reduced motion ≠ no motion. Keep opacity and color transitions. Remove translation and scale.
+
 ```css
 @media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+  *, *::before, *::after {
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+  /* Per component: drop movement, keep the fade. */
+  .reveal, .toast, .drawer {
+    transform: none !important;
+    transition-property: opacity, color, background-color !important;
   }
 }
 ```
 
-Reduced motion ≠ no motion. Keep opacity and color transitions. Remove translation and scale.
+A blanket `transition-duration: 0.01ms` on `*` also kills the fades you meant to keep. Remove movement per component instead.
 
 Gate hover effects behind `@media (hover: hover) and (pointer: fine)` so touch devices don't trigger hover on tap.
 
@@ -362,6 +403,18 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] Hit areas ≥ 44×44px
 - [ ] Cards represent distinct entities, not generic containers
 - [ ] Visible focus ring; `outline: none` is replaced if used
+- [ ] No colored left/top bars as active, selected, or callout signal
+- [ ] One edge treatment per element; no nested cards
+
+**Forms, data, and responsive**
+- [ ] Errors are text near the field, not color alone
+- [ ] Tables use one row separator; numbers right-aligned and tabular
+- [ ] `svh`/`dvh` instead of `100vh`; images have dimensions
+- [ ] Dark mode uses its own tokens
+
+**Copy**
+- [ ] No buzzwords, placeholder names, or invented numbers
+- [ ] Sentence case used consistently
 
 **Motion**
 - [ ] No `transition: all`
@@ -371,9 +424,11 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] No `scale(0)` entrances; no `transform-origin: center` on popovers
 - [ ] `prefers-reduced-motion` honored
 - [ ] Hover gated behind `@media (hover: hover) and (pointer: fine)` where it would misfire on touch
+- [ ] No reveal on every block; content visible without JS
 
 **Polish**
 - [ ] Optical alignment where geometric is off
 - [ ] Image outlines at 10% pure black or pure white
 - [ ] Scale on press (`0.96`) where it benefits the interaction
-- [ ] Nothing from `references/anti-patterns.md` is present
+- [ ] `scripts/check-tells.py` reports no `[always]` hits
+- [ ] Nothing from `references/anti-patterns.md` is present, or each `[default]` kept has a stated reason
