@@ -10,7 +10,15 @@ python3 <skill-dir>/scripts/check-tells.py src/
 
 `<skill-dir>` is the folder holding `SKILL.md`. The script scans HTML, CSS, JS/TS, JSX/TSX, Vue, Svelte, Astro, and MDX, and skips `node_modules`, `dist`, `build`, and framework output folders.
 
-Each hit prints as `file:line  [tag] name  ->  fix`. The exit code is `1` when any `[always]` tell is found, so it can gate CI.
+Each hit prints as `file:line  [tag] name  ->  fix`, followed by a count per tell. The exit code is `1` when any `[always]` tell is found, so it can gate CI.
+
+| Flag | Effect |
+| --- | --- |
+| `--only always` | print only `[always]` hits; start here on a big codebase |
+| `--only default` | print only `[default]` hits |
+| `--rtl` | also flag physical left/right spacing (`ml-*`, `pr-*`) |
+
+Comment lines are skipped, so a comment that mentions `outline: none` is not a hit.
 
 ## Read the hits
 
@@ -48,19 +56,20 @@ Put `check-tells: ignore` in a comment on the same line or the line above, with 
 | `h-screen` | always | `h-screen` (not `min-h-screen`) |
 | 100vh height | default | `height: 100vh`; fine on hidden filler layers |
 | 100vh min-height | default | `min-h-screen`, `min-height: 100vh` |
-| Physical left/right spacing | default | `ml-*`, `pr-*` instead of `ms-*`, `pe-*` |
+| Physical left/right spacing | default, `--rtl` only | `ml-*`, `pr-*` instead of `ms-*`, `pe-*` |
 | `transition: all` | always | `transition-all`, `transition: all` |
-| Pulse/bounce/ping | always | `animate-pulse`, `animate-bounce`, `animate-ping`; skeletons exempt |
+| Bounce/ping | always | `animate-bounce`, `animate-ping` |
+| Pulse | default | `animate-pulse`; fine on skeleton loaders |
 | Infinite animation | default | `animation: … infinite`; spinners and progress exempt |
 | No reduced-motion fallback | always | a stylesheet with motion and no `prefers-reduced-motion`, `motion-safe:`, or `motion-reduce:` |
 | Hover lift | default | `hover:-translate-y-1` |
 | `scale(0)` entrance | always | `scale(0)`, `scale-0` |
 | Layout property transition | always | `transition: width …`, `top`, `left`, `margin`, `padding` |
-| Focus ring removed | always | `focus:outline-none` with no ring, `outline: none`; `:focus:not(:focus-visible)` exempt |
+| Focus ring removed | always | `focus:outline-none` with no ring, `outline: none`; `:focus:not(:focus-visible)` and `focus-within:` wrappers exempt |
 | Clickable div | always | `<div … onClick=`, across lines |
 | z-index 9999 | always | `z-index: 9999`, `z-[9999]` |
-| `!important` | always | outside `prefers-reduced-motion` blocks |
-| Placeholder people | always | Acme, Jane Cooper, John Doe, lorem ipsum |
+| `!important` | always | outside reduced-motion and print blocks, and not in JS regexes |
+| Placeholder people | always | Acme, Jane Cooper, John Doe, lorem ipsum; `placeholder=` and "e.g." examples exempt |
 | Buzzword copy | always | seamless, effortless, supercharge, unleash, next-gen |
 | Emoji in copy | default | ✨ 🚀 🔥 💡 ⚡ 🎉 |
 

@@ -42,8 +42,20 @@ class BadFixture(unittest.TestCase):
 
 
 class GoodFixture(unittest.TestCase):
-    def test_no_false_alarms(self):
+    def test_no_false_alarms_css(self):
         self.assertEqual(check_tells.scan(str(FIXTURES / "good.css")), [])
+
+    def test_only_defaults_in_tsx(self):
+        # Comments, placeholder examples, focus-within wrappers: no [always] hits.
+        hits = check_tells.scan(str(FIXTURES / "good.tsx"))
+        self.assertEqual([h for h in hits if h[1] == "always"], [])
+        self.assertIn("pulse", {h[2] for h in hits})
+
+    def test_rtl_is_opt_in(self):
+        plain = {h[2] for h in check_tells.scan(str(FIXTURES / "good.tsx"))}
+        rtl = {h[2] for h in check_tells.scan(str(FIXTURES / "good.tsx"), rtl=True)}
+        self.assertNotIn("physical left/right spacing", plain)
+        self.assertIn("physical left/right spacing", rtl)
 
 
 class Tags(unittest.TestCase):
@@ -66,6 +78,8 @@ class ExitCode(unittest.TestCase):
     def test_exit_codes(self):
         self.assertEqual(check_tells.main(["x", str(FIXTURES / "bad.tsx")]), 1)
         self.assertEqual(check_tells.main(["x", str(FIXTURES / "good.css")]), 0)
+        self.assertEqual(check_tells.main(["x", "--only", "always", str(FIXTURES / "bad.tsx")]), 1)
+        self.assertEqual(check_tells.main(["x", "--only", "nope", str(FIXTURES / "bad.tsx")]), 2)
 
 
 if __name__ == "__main__":

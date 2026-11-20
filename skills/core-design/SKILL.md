@@ -297,7 +297,7 @@ UI animations stay under 300ms by default. Longer durations are acceptable when 
 - Never animate from `scale(0)`. Start from `scale(0.95)` with `opacity: 0`.
 - Popovers scale from their trigger, not center. Set `transform-origin` to the trigger location. Modals stay centered.
 - Use CSS transitions for interruptible UI (toasts, hovers, dynamic state). Use keyframes only for sequences that run once.
-- Split enter animations into staged chunks with ~50–100ms stagger.
+- Split enter animations into staged chunks with ~50–100ms between chunks.
 - Exits should be subtler and faster than entrances.
 - Animate icon swaps with opacity, scale (`0.25` → `1`), and a small blur (`4px` → `0`). Cross-fade with both icons in the DOM rather than toggling visibility.
 - Move and resize with `transform`, `opacity`, and `filter` only. Never animate `width`, `height`, `top`, `left`, or `margin`.
@@ -340,7 +340,7 @@ The aggregate of small correct details is the difference between forgettable UI 
 - **Image outlines** at 10% pure black or pure white only.
 - **Scale on press** — `scale(0.96)` on `:active`. Never below `0.95`.
 - **Asymmetric press timing** — slow on press when deliberate (hold-to-delete), snappy on release.
-- **Stagger** — when many items enter, delay each by 30–80ms.
+- **Stagger** — when many items enter, delay each by 30–80ms, and cap the total delay near 300ms. Past ~8 items, stagger the first few and bring the rest in together.
 - **Blur to mask transitions** — a brief `filter: blur(2px)` smooths crossfades that look like two objects swapping.
 - **Stable scrollbars** — `scrollbar-gutter: stable` on the scroll root so opening a modal doesn't shift the page.
 - **Anchor offsets** — `scroll-margin-top` on headings equal to the sticky header height, so jump links don't hide the target.
