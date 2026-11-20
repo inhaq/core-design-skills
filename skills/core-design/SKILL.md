@@ -27,7 +27,7 @@ Generate and review frontend UI that feels considered rather than generic. The d
 - [Output expectations](#output-expectations)
 - [Review checklist](#review-checklist)
 
-Detailed reference material lives in `references/`:
+Detailed reference material lives in `references/`. Paths in this skill are relative to this file's directory.
 - `references/anti-patterns.md` — the catalog of AI-default tells, each with a fix and an `[always]` / `[default]` tag. Read when reviewing UI for genericness or before shipping.
 - `references/grep-tells.md` — how to run `scripts/check-tells.py`, a fast scan for tells in source. Read before a review pass.
 - `references/examples.md` — before/after code for the most common tells. Read when you need a concrete fix.
@@ -39,7 +39,7 @@ Detailed reference material lives in `references/`:
 2. Pick a clear aesthetic direction (see [Aesthetic direction](#aesthetic-direction)).
 3. Apply principles in priority order: **hierarchy → spacing → typography → color → components → motion → polish**.
 4. Run the [Review checklist](#review-checklist) before finishing.
-5. Run `scripts/check-tells.py` on the output, then verify nothing in `references/anti-patterns.md` is present.
+5. Run `python3 <skill-dir>/scripts/check-tells.py <output-path>`, then verify nothing in `references/anti-patterns.md` is present.
 
 **Conflict resolution.** When rules conflict, prefer clarity, hierarchy, and accessibility over style.
 
@@ -56,8 +56,8 @@ The rules that prevent the most common AI-generated UI mistakes.
 3. Two font families maximum; one is often enough.
 4. Inner radius = outer radius − inset (padding, border, or gap).
 5. Group with proximity, not borders. Use shadows or background tone for depth.
-6. Animate `transform`, `opacity`, and `filter` only. Never `transition: all`.
-7. UI motion uses `ease-out` or a custom curve; default duration ≤ 300ms.
+6. Move and resize with `transform`, `opacity`, and `filter` only. Color and background may transition on state change. Never `transition: all`.
+7. UI motion uses `ease-out` or a custom curve; default duration ≤ 300ms. Large moves (drawers, sheets) may run to 500ms.
 8. Touch targets ≥ 44×44px. Every interactive element has a visible focus ring.
 9. Body text contrast ≥ 4.5:1. Never communicate state with color alone.
 10. Design tokens or CSS variables for color, spacing, radius, and type — no magic values.
@@ -188,6 +188,12 @@ A card creates a container; a container implies a thing. If the content is just 
 - Earn the card. Don't wrap arbitrary content in one.
 - Vary cards in size or weight when content priority varies.
 
+### Icons
+
+- One icon set, one stroke weight, one size scale (16 / 20 / 24).
+- Size icons to the text beside them, then align optically.
+- Icon-only buttons need an `aria-label`. Don't put an icon next to every label.
+
 ### Navigation
 
 - 3–7 top-level items. Push the rest into secondary navigation.
@@ -223,6 +229,8 @@ Never use `outline: none` without replacing the focus ring. Empty states aren't 
 - Use `100svh` / `100dvh`, not `100vh`, for full-height sections.
 - Give images `width` and `height` (or `aspect-ratio`) to prevent layout shift.
 - Nothing essential lives behind hover alone.
+- Use logical properties (`margin-inline-start`, `border-inline-start`, Tailwind `ms-*` / `ps-*`) so layouts flip for right-to-left languages.
+- Test with long and translated strings (German runs ~30% longer). Labels grow; nothing clips. Format dates and numbers with `Intl`.
 
 ## Copy
 
@@ -281,7 +289,7 @@ UI animations stay under 300ms by default. Longer durations are acceptable when 
 - Split enter animations into staged chunks with ~50–100ms stagger.
 - Exits should be subtler and faster than entrances.
 - Animate icon swaps with opacity, scale (`0.25` → `1`), and a small blur (`4px` → `0`). Cross-fade with both icons in the DOM rather than toggling visibility.
-- Only animate `transform`, `opacity`, and `filter`.
+- Move and resize with `transform`, `opacity`, and `filter` only. Never animate `width`, `height`, `top`, `left`, or `margin`.
 - Never use `transition: all`. Specify exact properties.
 - Use `will-change` only on `transform`, `opacity`, or `filter`, and only when you observe stutter.
 
@@ -291,19 +299,22 @@ Reduced motion ≠ no motion. Keep opacity and color transitions. Remove transla
 
 ```css
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
+  html { scroll-behavior: auto; }
+
+  /* Keep each element's end position; stop animating the trip there. */
+  .drawer, .toast, .popover {
+    transition-property: opacity;
   }
-  /* Per component: drop movement, keep the fade. */
-  .reveal, .toast, .drawer {
-    transform: none !important;
-    transition-property: opacity, color, background-color !important;
-  }
+
+  /* Entrance reveals rest at no transform, so skip the offset. */
+  .js .reveal { transform: none; }
+
+  /* Stop decorative loops. Spinners and progress keep running: they show work. */
+  .marquee, .float { animation: none; }
 }
 ```
 
-A blanket `transition-duration: 0.01ms` on `*` also kills the fades you meant to keep. Remove movement per component instead.
+Two traps: a blanket `transition-duration: 0.01ms` on `*` kills the fades you meant to keep, and `transform: none` on a drawer or toast pops a hidden one into view. Change *which* properties transition, not where the element ends up.
 
 Gate hover effects behind `@media (hover: hover) and (pointer: fine)` so touch devices don't trigger hover on tap.
 
@@ -399,6 +410,7 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 
 **Components**
 - [ ] Concentric radii (inner = outer − inset)
+- [ ] One icon set, one stroke weight
 - [ ] All interactive states implemented
 - [ ] Hit areas ≥ 44×44px
 - [ ] Cards represent distinct entities, not generic containers
@@ -411,6 +423,7 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] Tables use one row separator; numbers right-aligned and tabular
 - [ ] `svh`/`dvh` instead of `100vh`; images have dimensions
 - [ ] Dark mode uses its own tokens
+- [ ] Logical properties for left/right; long strings don't clip
 
 **Copy**
 - [ ] No buzzwords, placeholder names, or invented numbers
@@ -419,8 +432,8 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 **Motion**
 - [ ] No `transition: all`
 - [ ] `ease-out` or custom curve, not `ease-in`, for UI
-- [ ] Durations under 300ms by default
-- [ ] Animates `transform` / `opacity` / `filter` only
+- [ ] Durations under 300ms by default; large moves ≤ 500ms
+- [ ] Movement uses `transform` / `opacity` / `filter`; no layout properties animated
 - [ ] No `scale(0)` entrances; no `transform-origin: center` on popovers
 - [ ] `prefers-reduced-motion` honored
 - [ ] Hover gated behind `@media (hover: hover) and (pointer: fine)` where it would misfire on touch
@@ -430,5 +443,5 @@ When reviewing UI, present findings as a markdown table with `Before | After | W
 - [ ] Optical alignment where geometric is off
 - [ ] Image outlines at 10% pure black or pure white
 - [ ] Scale on press (`0.96`) where it benefits the interaction
-- [ ] `scripts/check-tells.py` reports no `[always]` hits
+- [ ] `scripts/check-tells.py` reports no `[always]` hits; each kept hit has a `check-tells: ignore` reason
 - [ ] Nothing from `references/anti-patterns.md` is present, or each `[default]` kept has a stated reason

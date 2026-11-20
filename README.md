@@ -53,10 +53,13 @@ Nothing inside `SKILL.md` is tool-specific.
 .
 ├── README.md                              # this file
 ├── AGENTS.md                              # repo-level instructions for agents working on the skill
+├── LICENSE                                # MIT
+├── .github/workflows/ci.yml               # validates the skill and tests the checker
 ├── evals/                                 # test prompts for the skill (not installed)
+├── tests/                                 # skill validator, checker tests, fixtures (not installed)
 └── skills/
     └── core-design/
-        ├── SKILL.md                       # entry point — frontmatter + main instructions (~435 lines)
+        ├── SKILL.md                       # entry point — frontmatter + main instructions (~450 lines)
         ├── references/
         │   ├── anti-patterns.md           # AI-default tells with fixes; loaded when reviewing or shipping
         │   ├── grep-tells.md              # how to run and extend the tell checker
@@ -122,6 +125,8 @@ The references add a tagged anti-pattern catalog (each tell with its fix), befor
 python3 skills/core-design/scripts/check-tells.py src/
 ```
 
+Add `check-tells: ignore` in a comment to keep a hit on purpose, with the reason.
+
 
 ## Contributing
 
@@ -136,4 +141,4 @@ The skill is meant to stay short, opinionated, and practical. When extending it:
 
 ## License
 
-MIT.
+MIT. See `LICENSE`.

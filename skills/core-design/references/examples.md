@@ -1,6 +1,6 @@
 # Before and after
 
-Read this file when you need a concrete fix for a common tell, or when a review needs a worked example. Each pair shows the AI-default first, then the fix. Tailwind is used for brevity; the same fix applies in any CSS method.
+Read this file when you need a concrete fix for a common tell, or when a review needs a worked example. Each pair shows the AI-default first, then the fix. Tailwind is used for brevity; the same fix applies in any CSS method. "After" code uses token classes (`bg-surface-2`, `text-fg`, `bg-warning-subtle`) mapped to your theme, not Tailwind's default palette.
 
 ## Contents
 
@@ -22,7 +22,7 @@ Read this file when you need a concrete fix for a common tell, or when a review 
 <a class="border-l-4 border-indigo-500 pl-3 text-indigo-600">Projects</a>
 
 <!-- After: tint + weight, plus aria-current -->
-<a aria-current="page" class="rounded-md bg-neutral-100 px-3 font-medium text-neutral-900">Projects</a>
+<a aria-current="page" class="rounded-md bg-surface-2 px-3 font-medium text-fg">Projects</a>
 ```
 
 ## 2. Callout
@@ -32,7 +32,7 @@ Read this file when you need a concrete fix for a common tell, or when a review 
 <div class="border-l-4 border-amber-500 bg-amber-50 p-4">Back up first.</div>
 
 <!-- After: tint, icon, bold lead word; no stripe -->
-<div role="note" class="flex gap-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+<div role="note" class="flex gap-3 rounded-lg bg-warning-subtle p-4 text-warning-fg">
   <svg aria-hidden="true" class="mt-0.5 size-4 shrink-0">…</svg>
   <p><strong>Back up first.</strong> The migration rewrites every row.</p>
 </div>
@@ -72,7 +72,7 @@ Read this file when you need a concrete fix for a common tell, or when a review 
 
 <!-- After: one lead feature, the rest as a plain list -->
 <section class="grid gap-12 md:grid-cols-[2fr_1fr]">
-  <article><h3>Branch previews</h3><p>…</p><img … /></article>
+  <article><h3>Branch previews</h3><p>…</p><img src="/previews.png" alt="Preview link on a pull request" width="960" height="600" /></article>
   <ul class="space-y-4"><li><strong>Rollbacks</strong> in one click.</li>…</ul>
 </section>
 ```
@@ -120,8 +120,8 @@ Read this file when you need a concrete fix for a common tell, or when a review 
 
 <!-- After: label, message, and programmatic link -->
 <label for="email">Email</label>
-<input id="email" aria-invalid="true" aria-describedby="email-err" class="border-red-600" />
-<p id="email-err" class="text-red-700">Add an @ and a domain, like name@company.com.</p>
+<input id="email" aria-invalid="true" aria-describedby="email-err" class="border-danger" />
+<p id="email-err" class="text-danger-fg">Add an @ and a domain, like name@company.com.</p>
 ```
 
 ## 10. Scroll reveal

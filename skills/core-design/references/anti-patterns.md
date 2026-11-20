@@ -10,6 +10,7 @@ Read this file when reviewing UI for "AI-default" tells, when a generated design
 - [Layout](#layout)
 - [Borders, boxes, and containers](#borders-boxes-and-containers)
 - [Components](#components)
+- [Icons](#icons)
 - [Marketing sections](#marketing-sections)
 - [Decoration](#decoration)
 - [Motion](#motion)
@@ -18,19 +19,20 @@ Read this file when reviewing UI for "AI-default" tells, when a generated design
 - [Product UI and dashboards](#product-ui-and-dashboards)
 - [Forms](#forms)
 - [Content and copy](#content-and-copy)
+- [Internationalization](#internationalization)
 - [Accessibility and code](#accessibility-and-code)
 - [Short rule of thumb](#short-rule-of-thumb)
 
 ## How to read this file
 
-Each item is written as **Pattern.** Why it fails. → What to do instead.
+Each item is written as **Pattern.** `[tag]` Why it fails, when not obvious. → What to do instead.
 
 Each item carries a tag:
 
 - `[always]` — wrong in every context. Fix it.
 - `[default]` — wrong when used by default. Allowed only when the aesthetic direction calls for it and you can say why.
 
-Many of these can be found mechanically. Run `scripts/check-tells.py` over the output, then judge each hit by hand. See `references/grep-tells.md`.
+Many of these can be found mechanically. Run `scripts/check-tells.py` (path relative to the skill directory) over the output, then judge each hit by hand. See `references/grep-tells.md`.
 
 ## Color and mood
 
@@ -42,7 +44,7 @@ Many of these can be found mechanically. Run `scripts/check-tells.py` over the o
 - **Colored glow shadow under the primary button** (`shadow-indigo-500/50`). `[default]` Fake energy. → Neutral, low-opacity shadow or none.
 - **Radial spotlight gradient behind the hero.** `[default]` Default "premium" filler. → Let type and composition carry the hero.
 - **Tailwind default palette used verbatim** (`slate-900`, `indigo-500`, `gray-500` body). `[default]` Makes every site the same site. → Define tokens tuned to the brand.
-- **Light gray text on white** (`gray-400` on `#fff`). `[always]` Fails 4.5:1. → Darker neutral; demote with size or weight instead.
+- **Light gray body text on a light background** (`gray-400` on `#fff`). `[always]` Fails 4.5:1. → Darker neutral; demote with size or weight instead.
 - **Random bright colors with no meaning.** `[always]` Color stops meaning anything. → One accent plus semantic colors.
 
 ## Typography
@@ -74,6 +76,7 @@ Many of these can be found mechanically. Run `scripts/check-tells.py` over the o
 ## Borders, boxes, and containers
 
 - **Colored left-edge bar as the only signal for active or selected state** (nav items, sidebar rows, tabs, cards, pills, tips). `[always]` Adjacent items each carrying an accent create competing hierarchies. → Background tint, icon state, or a weight shift. Reserve top or bottom borders for section grouping, not per-item status.
+  The same bar in disguise counts too: `border-s-4`, `border-inline-start`, an inset shadow (`box-shadow: inset 3px 0 0 …`), or a `::before` strip pinned to the left edge.
 - **Colored left stripe on callouts, alerts, notes, and blockquotes** (`border-l-4`). `[default]` The default "docs callout" look. → Tinted background plus an icon and a bold lead word; for quotes, use type (size, italic, hanging punctuation).
 - **Colored top bar on cards** (`border-t-4`). `[default]` Same cliché rotated. → Let content or a small label signal category.
 - **Border, ring, and shadow stacked on one element.** `[always]` Three edges fighting. → Pick one edge treatment.
@@ -102,6 +105,13 @@ Many of these can be found mechanically. Run `scripts/check-tells.py` over the o
 - **Skeletons that don't match the real layout.** `[always]` Layout jumps when content lands. → Skeletons share the final dimensions.
 - **Disabled submit button with no reason given.** `[always]` → Keep it enabled and show what is missing on submit, or explain inline.
 
+## Icons
+
+- **Icons from two or more sets on one screen.** `[always]` Stroke, corner, and fill styles clash. → One set.
+- **Mixed stroke weights or sizes.** `[always]` → One stroke weight; a size scale of 16 / 20 / 24.
+- **Icons centered on the line box instead of the text.** `[default]` They sit low or high. → Size to the text, nudge optically.
+- **An icon next to every label.** `[default]` Icons stop helping when everything has one. → Icons only where they speed recognition.
+
 ## Marketing sections
 
 - **Cookie-cutter structure: hero → features → testimonials → pricing → CTA.** `[default]` → Order sections by what this audience needs to believe.
@@ -117,17 +127,17 @@ Many of these can be found mechanically. Run `scripts/check-tells.py` over the o
 
 ## Decoration
 
-- **Decorative blobs and shapes with no purpose.** `[default]`
-- **Floating dots, sparkles, waves, abstract SVG shapes as default polish.** `[default]`
-- **Dot or grid background fading out from the center** (radial mask). `[default]` The current default backdrop.
-- **Mesh gradients behind everything.** `[default]`
-- **Grain overlay plus blur blobs together.** `[default]` Two atmosphere tricks fighting.
-- **Spotlight that follows the cursor.** `[default]` Costs frames and means nothing.
-- **Emoji as a design system** (✨🚀 in headings and buttons). `[always]`
+- **Decorative blobs and shapes with no purpose.** `[default]` → Remove; let composition and type carry the page.
+- **Floating dots, sparkles, waves, abstract SVG shapes as default polish.** `[default]` → Remove, or draw one shape that belongs to the brand.
+- **Dot or grid background fading out from the center** (radial mask). `[default]` The current default backdrop. → Flat surface, or a texture tied to the product (a real map, real data).
+- **Mesh gradients behind everything.** `[default]` → One gradient moment at most; flat elsewhere.
+- **Grain overlay plus blur blobs together.** `[default]` Two atmosphere tricks fighting. → Keep one.
+- **Spotlight that follows the cursor.** `[default]` Costs frames and means nothing. → Remove.
+- **Emoji as a design system** (✨🚀 in headings and buttons). `[default]` → Real icons, or no icon. Keep emoji only for a playful brand that uses them in its own voice.
 - **Glassmorphism stacked everywhere.** `[default]` → One translucent layer at most, with a solid fallback.
 - **Noise textures everywhere.** `[default]` → Only as deliberate atmosphere.
 
-→ For all of the above: if you cannot say what the decoration reinforces, remove it.
+If you cannot say what a decoration reinforces, remove it.
 
 ## Motion
 
@@ -137,38 +147,39 @@ Many of these can be found mechanically. Run `scripts/check-tells.py` over the o
 - **Number count-up animations.** `[default]` Hides the number while it spins. → Show the final value.
 - **Typing effect in the hero.** `[default]` Makes people wait to read. → Static text.
 - **Parallax on scroll.** `[default]` → Only when depth carries meaning; respect reduced motion.
-- **Infinite pulse or bounce on anything.** `[always]` → Motion that never stops becomes noise.
+- **Infinite pulse, bounce, or ping on content or CTAs.** `[always]` Motion that never stops becomes noise. → Remove. Spinners and progress bars are exempt while the work runs.
 - **Content hidden at `opacity: 0` until JS runs.** `[always]` Vanishes when JS fails or loads slowly. → Hide only under a `.js` class or use `@starting-style`.
+- **Layout properties animated** (`width`, `height`, `top`, `left`, `margin`). `[always]` Janks. → `transform` for movement and size.
 - **`transition: all`.** `[always]` → List exact properties.
 
 ## Hierarchy
 
-- **Everything has equal visual weight.** `[always]`
-- **No obvious primary action.** `[always]`
-- **Accent color on so many things that nothing stands out.** `[always]`
-- **Cards, charts, filters, and tables all competing at once.** `[always]`
+- **Everything has equal visual weight.** `[always]` → Pick the one element that matters; enlarge or darken it, demote the rest.
+- **No obvious primary action.** `[always]` → One filled button per view.
+- **Accent color on so many things that nothing stands out.** `[always]` → Accent only on the primary action and current state.
+- **Cards, charts, filters, and tables all competing at once.** `[always]` → Lead with one; move filters to a quiet row; fold the rest below.
 
 ## Spacing and rhythm
 
-- **Same padding on every component regardless of density.** `[always]`
-- **Same margin between every section regardless of importance.** `[always]`
-- **Random values that look "about right" but follow no system.** `[always]` → 4 or 8 base unit.
+- **Same padding on every component regardless of density.** `[always]` → Tight for dense controls, roomy for reading surfaces.
+- **Same margin between every section regardless of importance.** `[always]` → More space before major sections, less within a group.
+- **Random values that look "about right" but follow no system.** `[always]` → 4 or 8 base unit, from tokens.
 
 ## Product UI and dashboards
 
-- **Designing every product like a marketing site.** `[always]`
+- **Designing every product like a marketing site.** `[always]` → Dense, calm, task-first: smaller type, fewer hero moments.
 - **"+12.5% ↑" green delta badge on every KPI card.** `[default]` → Show change only where it matters, with the period it covers.
-- **Charts everywhere when a number would do.** `[default]`
+- **Charts everywhere when a number would do.** `[default]` → A plain number; chart only for trend or comparison.
 - **Area charts with a gradient fill.** `[default]` → Plain line; fill only for stacked parts of a whole.
 - **Zebra rows, borders, and hover highlight all on one table.** `[always]` → Pick one row separator.
 - **Green online dot on every avatar.** `[default]` → Only where presence matters.
-- **Search box in the top bar that does nothing.** `[always]`
+- **Search box in the top bar that does nothing.** `[always]` → Wire it up, or remove it.
 - **Breadcrumbs in a two-level app.** `[default]` → A back link or a clear title.
 - **Key data truncated with "…".** `[always]` → Wrap, widen, or show full value on focus.
 - **Long forms dumped on one screen.** `[default]` → Group and step them.
 - **Empty states that just say "No data."** `[always]` → Say what goes here and how to add it.
-- **Missing hover, focus, active, or disabled states.** `[always]`
-- **Mobile layouts that are just narrower desktops.** `[always]`
+- **Missing hover, focus, active, or disabled states.** `[always]` → Build every state listed in `SKILL.md` → States.
+- **Mobile layouts that are just narrower desktops.** `[always]` → Redesign: stack, collapse tables to rows, move secondary actions into a menu.
 
 ## Forms
 
@@ -176,31 +187,38 @@ Many of these can be found mechanically. Run `scripts/check-tells.py` over the o
 - **Errors shown only as a red border.** `[always]` Color alone. → Message under the field that says how to fix it.
 - **Errors shown only after submit.** `[default]` → Validate on blur for format, on submit for completeness.
 - **No mark for required or optional fields.** `[always]` → Mark whichever is rarer.
-- **Input height different from button height in the same row.** `[always]`
+- **Input height different from button height in the same row.** `[always]` → Share one control-height token.
 
 ## Content and copy
 
-- **"Build smarter," "Unlock the power of AI," "Transform your workflow."** `[always]`
+- **"Build smarter," "Unlock the power of AI," "Transform your workflow."** `[always]` → Name the task and the result.
 - **Buzzwords: seamless, effortless, elevate, supercharge, unleash, next-gen, AI-powered.** `[always]` → Say what it actually does.
-- **Value propositions that could belong to any startup.** `[always]`
-- **Every feature described in the same sentence structure.** `[always]`
+- **Value propositions that could belong to any startup.** `[always]` → Name the user, the job, and a number or detail only this product has.
+- **Every feature described in the same sentence structure.** `[always]` → Vary length and shape; lead some with the result, some with the action.
 - **Em dashes and three-item lists in every paragraph.** `[default]` A prose tell as strong as the purple gradient. → Periods and commas; lists of the length the content has.
 - **Placeholder people and companies** (Acme Inc, Jane Cooper, John Doe, lorem ipsum). `[always]` → Real or realistic microcopy.
-- **Invented testimonials, metrics, or customer counts.** `[always]`
-- **"Get started free" and "Learn more" side by side at equal weight.** `[always]`
+- **Invented testimonials, metrics, or customer counts.** `[always]` → Real ones, or leave the slot out.
+- **"Get started free" and "Learn more" side by side at equal weight.** `[always]` → One button, one quiet link.
+
+## Internationalization
+
+- **Layout that only works with short English strings.** `[always]` German and Finnish run ~30% longer; labels clip or wrap badly. → Test with long strings; let buttons and tabs grow.
+- **Physical `left` / `right` in layout CSS** (`ml-*`, `pl-*`, `border-l`, `left: 0`). `[default]` Breaks in right-to-left languages. → Logical properties: `margin-inline-start`, `border-inline-start`, Tailwind `ms-*` / `ps-*` / `border-s`.
+- **Dates, numbers, and currency formatted by hand.** `[always]` → `Intl.DateTimeFormat`, `Intl.NumberFormat`.
+- **Text baked into images.** `[always]` Can't translate or scale. → Live text over the image.
 
 ## Accessibility and code
 
-- **`<div onClick>` where a `<button>` or `<a>` belongs.** `[always]`
-- **Icon-only buttons with no `aria-label`.** `[always]`
-- **`outline: none` / `focus:outline-none` with no replacement ring.** `[always]`
-- **Content that only appears on hover.** `[always]` Unreachable on touch and keyboard.
-- **Images without `width` and `height`.** `[always]` Layout shifts as they load.
+- **`<div onClick>` where a `<button>` or `<a>` belongs.** `[always]` No keyboard or screen-reader support. → The native element.
+- **Icon-only buttons with no `aria-label`.** `[always]` → Add one that names the action.
+- **`outline: none` / `focus:outline-none` with no replacement ring.** `[always]` → `:focus-visible` ring with ≥ 3:1 contrast. Removing the outline only under `:focus:not(:focus-visible)` is fine.
+- **Content that only appears on hover.** `[always]` Unreachable on touch and keyboard. → Show it always, or on focus and tap too.
+- **Images without `width` and `height`.** `[always]` Layout shifts as they load. → Set both, or `aspect-ratio`.
 - **Hardcoded color, spacing, and radius values.** `[always]` → Tokens.
-- **`!important` and `z-index: 9999`.** `[always]` → Fix the cascade; use a z-index scale.
+- **`!important` and `z-index: 9999`.** `[always]` → Fix the cascade; use a z-index scale. `!important` inside a `prefers-reduced-motion` block is fine.
 - **Dark mode made by inverting colors, or white text on pure black.** `[always]` → Design dark tokens; lower contrast slightly and lift surfaces with tone.
-- **Inconsistent component styles across screens.** `[always]`
-- **Broken or missing dark mode when the product has one.** `[always]`
+- **Inconsistent component styles across screens.** `[always]` → One component per job, reused.
+- **Broken or missing dark mode when the product has one.** `[always]` → Check every screen in both themes.
 
 ## Short rule of thumb
 

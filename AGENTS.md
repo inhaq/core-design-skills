@@ -22,7 +22,17 @@ skills/core-design/
     └── check-tells.py             # regex scan for AI-default tells; exit 1 on [always] hits
 ```
 
-`evals/` at the repo root holds test prompts for the skill. It is not part of the installed skill.
+Repo-only folders, not part of the installed skill:
+
+- `evals/` — test prompts for the skill.
+- `tests/` — `validate_skill.py` (spec and line-limit checks) and unit tests for the checker, with fixtures.
+- `.github/workflows/ci.yml` — runs both on every pull request.
+
+Before pushing, run:
+
+```bash
+python3 tests/validate_skill.py && python3 -m unittest discover -s tests
+```
 
 This is hub-and-spoke. `SKILL.md` is the always-loaded body. `references/` files load only when the agent decides to read them. Keep it that way.
 
@@ -70,7 +80,7 @@ The skill is most useful when it stays short, opinionated, and practical. Apply 
 
 - `name` in frontmatter must be lowercase letters, numbers, and hyphens only, must match the directory name, and must not contain reserved words like `claude` or `anthropic`.
 - `description` must describe both **what** the skill does and **when** to use it. Write in third person. Include concrete triggers (frameworks, surface types, the words a user would actually say).
-- Keep `SKILL.md` body under 500 lines. Anthropic's recommendation; ours sits around 435.
+- Keep `SKILL.md` body under 500 lines. Anthropic's recommendation; ours sits around 450. `tests/validate_skill.py` enforces the limit.
 - Reference files stay one level deep. No nested reference chains. Agents may only partially read deeply nested files.
 
 ### Authoring discipline
@@ -83,7 +93,7 @@ The skill is most useful when it stays short, opinionated, and practical. Apply 
 - **Move heavy material to references.** If a section is more than ~30 lines and only relevant in specific situations, it belongs in `references/`. Add a one-line pointer in `SKILL.md` describing when to read it.
 - **Update the Review Checklist** when adding new rules.
 - **Update `references/anti-patterns.md`** when forbidding something so the rule is enforced both ways. Write each item as **Pattern.** why → fix, tagged `[always]` or `[default]`.
-- **Add a regex to `scripts/check-tells.py`** when the new tell can be found in source, and a row to `references/grep-tells.md`.
+- **Add a regex to `scripts/check-tells.py`** when the new tell can be found in source, a row to `references/grep-tells.md`, and a fixture line plus test in `tests/`.
 - **Add an eval case** to `evals/cases.json` when a tell slipped through in real use.
 
 ### Structure
